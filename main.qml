@@ -10,7 +10,9 @@ Window {
     height: 480
     title: qsTr("Hello World")
     color: "light gray"
+
     property var balance: 0
+    property var farmCount: 2
 
     Timer {
         id: timer
@@ -19,87 +21,107 @@ Window {
         repeat: true
 
         onTriggered: {
-            balance += income_coefficient.coefficient
+            for(var i = 0; i < farmCount-1; i++) {
+                balance += farm_list.get(i).coefficient;
+            }
             balance_label.text = "You'r balance is " + Math.round(balance) + "$"
         }
     }
 
-    ScrollView {
+    ListModel {
+        id: farm_list
+        ListElement{name: "Farm 1"; coefficient: 1}
+    }
+
+    Rectangle {
+        id: main_container
         anchors.fill: parent
 
-        Column {
-            spacing: 10
+        Rectangle {
+            z: 2
+            id: info_bar
+            width: parent.width
+            anchors.top: parent.top
+            height: 50
+            color: "#3370b9"
 
-            Rectangle {
-                id: info_bar
-                width: root.width
-                height: 50
-                color: "steel blue"
-
-                Text {
-                    id: balance_label
-                    anchors.centerIn: parent
-                    text: qsTr("You don't have money yet!")
-                    color: "white"
-                }
+            Text {
+                id: balance_label
+                anchors.centerIn: parent
+                text: qsTr("You don't have money yet!")
+                font.family: "Liberation Serif"
+                font.bold: true
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+                font.pointSize: 20
+                color: "white"
             }
+        }
 
-            Repeater {
-                model: 4
-                delegate: Rectangle {
-                    width: root.width
-                    height: 100
-                    color: "steel blue"
+        Rectangle {
+                id: farm_field
+                anchors.top: info_bar.bottom
+                anchors.bottom: new_farm.top
+                width: parent.width
+                color: "light gray"
 
-                    Text {
-                        id: fill_text
-                        anchors.centerIn: parent
-                        text: qsTr("Farm NN")
-                        color: "white"
-                    }
+                ScrollView {
+                    anchors.fill: parent
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            balance += 1000
-                            balance_label.text = "You'r balance is " + Math.round(balance) + "$"
+                    ListView {
+                        id: list
+                        spacing: 3
+                        model: farm_list//3
+                        delegate: Rectangle {
+                            width: parent.width
+                            height: 100
+                            color: "steel blue"
+
+                            Text {
+                                anchors.fill: parent
+                                color: "#ffffff"
+                                text: qsTr(name + "\n\nCoefficient: " + coefficient)
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+                                font.pointSize: 16
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    balance += Math.pow(10, index)
+                                    balance_label.text = "You'r balance is " + Math.round(balance) + "$"
+                                }
+                            }
                         }
                     }
                 }
             }
 
-            Rectangle {
-                id: action_bar
-                width: root.width
-                height: 150
-                color: "steel blue"
+        Rectangle {
+            id: new_farm
+            anchors.bottom: parent.bottom
+            width: parent.width
+            height: 150
+            color: "#3370b9"
 
-                Column {
-                    spacing: 5
+            Text {
+                anchors.fill: parent
+                color: "#ffffff"
+                text: qsTr("Build new farm")
+                font.pointSize: 20
+                verticalAlignment: Text.AlignVCenter
+                horizontalAlignment: Text.AlignHCenter
+            }
 
-                    Button {
-                        id: income_button
-                        width: action_bar.width
-                        text: "Get more money!"
-
-                        onClicked: {
-                            balance += income_coefficient.coefficient
-                            balance_label.text = "You'r balance is " + Math.round(balance) + "$"
-                        }
-                    }
-
-                    Slider {
-                        id: income_coefficient
-                        width: action_bar.width
-                        value: 0
-
-                        property var coefficient: 1
-
-                        onValueChanged: coefficient = value > 0 ? value * 100 : 1
-                    }
-
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    farm_list.append({"name":"Farm " + farmCount, "coefficient": Math.pow(10, farmCount-1)})
+                    farmCount++
                 }
             }
         }
+
     }
 }
