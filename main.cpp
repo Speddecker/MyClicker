@@ -1,6 +1,5 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QIcon>
 
 int main(int argc, char *argv[])
 {

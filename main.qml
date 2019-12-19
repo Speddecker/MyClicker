@@ -12,7 +12,7 @@ Window {
     color: "light gray"
 
     property var balance: 0
-    property var farmCount: 2
+    property var farm_count: 2
 
     Timer {
         id: timer
@@ -21,16 +21,17 @@ Window {
         repeat: true
 
         onTriggered: {
-            for(var i = 0; i < farmCount-1; i++) {
+            for(var i = 0; i < farm_count-1; i++) {
                 balance += farm_list.get(i).coefficient;
             }
+
             balance_label.text = "You'r balance is " + Math.round(balance) + "$"
         }
     }
 
     ListModel {
         id: farm_list
-        ListElement{name: "Farm 1"; coefficient: 1}
+        ListElement{farm_id: 0; name: "Farm 1"; coefficient: 1; max_level: 10; level: 1; lvlup_cost: 10}
     }
 
     Rectangle {
@@ -38,7 +39,7 @@ Window {
         anchors.fill: parent
 
         Rectangle {
-            z: 2
+            z: 100
             id: info_bar
             width: parent.width
             anchors.top: parent.top
@@ -70,17 +71,17 @@ Window {
 
                     ListView {
                         id: list
-                        spacing: 3
-                        model: farm_list//3
+                        spacing: 10
+                        model: farm_list
                         delegate: Rectangle {
                             width: parent.width
-                            height: 100
+                            height: width / 10 * 3 + 35
                             color: "steel blue"
 
                             Text {
                                 anchors.fill: parent
                                 color: "#ffffff"
-                                text: qsTr(name + "\n\nCoefficient: " + coefficient)
+                                text: qsTr(name + "\n\nCoefficient: " + coefficient + "\nLevel: " + level)
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
                                 font.pointSize: 16
@@ -91,6 +92,37 @@ Window {
                                 onClicked: {
                                     balance += Math.pow(10, index)
                                     balance_label.text = "You'r balance is " + Math.round(balance) + "$"
+                                }
+                            }
+
+                            Row {
+                                anchors.fill: parent
+                                anchors.centerIn: parent
+                                spacing: 5
+
+                                Column {
+                                    width: parent.width/5
+                                    height: parent.height
+                                    spacing: 5
+                                    padding: 5
+
+                                    Button {
+                                        text: qsTr("Level up for " + farm_list.get(index).lvlup_cost)
+
+                                        onClicked: {
+                                            if(balance > farm_list.get(index).lvlup_cost) {
+                                                balance -= farm_list.get(index).lvlup_cost
+                                                level++
+                                                lvlup_cost = level * Math.pow(10, index) * 10
+                                                coefficient = level * Math.pow(10, index)
+                                                if(level == max_level) {
+                                                    visible = false
+                                                } else {
+                                                    text: qsTr("Level up for " + farm_list.get(index).lvlup_cost)
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -117,8 +149,13 @@ Window {
             MouseArea {
                 anchors.fill: parent
                 onClicked: {
-                    farm_list.append({"name":"Farm " + farmCount, "coefficient": Math.pow(10, farmCount-1)})
-                    farmCount++
+                    farm_list.append({"farm_id":farm_count-1,
+                                      "name":"Farm " + farm_count,
+                                      "coefficient": Math.pow(10, farm_count-1),
+                                      "max_level":10,
+                                      "level": 1,
+                                      "lvlup_cost": Math.pow(10, farm_count)})
+                    farm_count++
                 }
             }
         }
